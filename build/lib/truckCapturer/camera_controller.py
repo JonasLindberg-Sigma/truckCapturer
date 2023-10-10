@@ -1,7 +1,7 @@
 import hydra
 import torch
 from random import randint
-from sort import *
+from .sort import *
 from ultralytics.yolo.engine.predictor import BasePredictor
 from ultralytics.yolo.utils import ops
 from ultralytics.yolo.utils.checks import check_imgsz
@@ -9,8 +9,8 @@ from ultralytics.yolo.utils.plotting import Annotator
 tracker = None
 detected_trucks = []
 
-from lib.config_loader import get_config
-from lib.utils import draw_boxes, grab_truck
+from .lib.config_loader import get_config
+from .lib.utils import draw_boxes, grab_truck
 
 def init_tracker():
     global tracker
@@ -102,13 +102,13 @@ class DetectionPredictor(BasePredictor):
             bbox_xyxy = tracked_dets[:, :4]
             identities = tracked_dets[:, 8]
             categories = tracked_dets[:, 4]
-            #draw_boxes(im0, bbox_xyxy, identities, categories, self.model.names)
+            draw_boxes(im0, bbox_xyxy, identities, categories, self.model.names)
             grab_truck(bbox_xyxy, im0, detected_trucks, identities)
 
         return log_string
 
 
-def run(src, model=None):
+def initiate(src, model=None):
     with hydra.initialize(version_base=None, config_path=None, job_name='truckCapture'):
         cfg = get_config()
         def _run(src, cfg, model=None):
@@ -119,12 +119,12 @@ def run(src, model=None):
             cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
             cfg.source = src
             cfg.show = True
-            cfg.device = "mps"  # Only apllicable for MacO
+            #cfg.device = "mps"  # Only apllicable for MacO
             predictor = DetectionPredictor(cfg)
             predictor()
         _run(src, cfg)
 
 
 if __name__ == "__main__":
-    src = '../pics/sample_video_2.mov'
-    run(src=src)
+    src = 'https://www.youtube.com/watch?v=IGkTMeZ8_g4'
+    initiate(src=src)

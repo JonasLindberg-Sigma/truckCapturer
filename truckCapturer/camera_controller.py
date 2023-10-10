@@ -1,7 +1,7 @@
 import hydra
 import torch
 from random import randint
-from sort import *
+from .sort import *
 from ultralytics.yolo.engine.predictor import BasePredictor
 from ultralytics.yolo.utils import ops
 from ultralytics.yolo.utils.checks import check_imgsz
@@ -9,8 +9,8 @@ from ultralytics.yolo.utils.plotting import Annotator
 tracker = None
 detected_trucks = []
 
-from lib.config_loader import get_config
-from lib.utils import draw_boxes, grab_truck
+from .lib.config_loader import get_config
+from .lib.utils import draw_boxes, grab_truck
 
 def init_tracker():
     global tracker
