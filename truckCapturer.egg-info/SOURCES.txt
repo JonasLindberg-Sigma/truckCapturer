@@ -1,0 +1,13 @@
+setup.py
+truckCapturer/camera_controller.py
+truckCapturer/capture.py
+truckCapturer/detect.py
+truckCapturer/sort.py
+truckCapturer.egg-info/PKG-INFO
+truckCapturer.egg-info/SOURCES.txt
+truckCapturer.egg-info/dependency_links.txt
+truckCapturer.egg-info/not-zip-safe
+truckCapturer.egg-info/top_level.txt
+truckCapturer/lib/__init__.py
+truckCapturer/lib/config_loader.py
+truckCapturer/lib/utils.py
