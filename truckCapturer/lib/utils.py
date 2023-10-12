@@ -1,26 +1,12 @@
 import cv2
-from time import time
 from requests import post
 
-def grab_truck(bbox, img, detected_trucks, identities):
-    _RATIO_OF_SCREEN = 0.34
-    _SCREEN_SZ = img.shape[0] * img.shape[1]
-    for i , box in enumerate(bbox):
-        x1, y1, x2, y2 = [int(i) for i in box]
-        id = int(identities[i] if identities is not None else 0)
-        area = (x2 - x1) * (y2 - y1)
-        if area / _SCREEN_SZ > _RATIO_OF_SCREEN:
-            if id not in detected_trucks:
-                if len(detected_trucks) > 10:  # Limit the size of detected trucks to 10, to avoid overgrowth
-                    detected_trucks.pop()
-                try:
-                    truck = img[y1:y2, x1:x2]
-                    #cv2.imwrite(f'id-{id}-time-{time()}.jpg', truck)
-                    post("", truck)
-                    detected_trucks.append(id)
-                    print(f'Truck detected with ID {id}')
-                except Exception as e:  # For some reason, bounding boxes can have negative starting points, remove these
-                    print("False positive")
+from anprmodule.predict import run
+
+def get_registration(img):
+    reg = run(img)
+    if reg:
+        post("", reg)
 
 def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(0, 0)):
     _SCREEN_SZ = img.shape[0] * img.shape[1]
