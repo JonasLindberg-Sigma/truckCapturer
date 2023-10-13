@@ -1,16 +1,52 @@
 import hydra
 import torch
 from random import randint
-from .sort import *
+from threading import Thread
 from ultralytics.yolo.engine.predictor import BasePredictor
 from ultralytics.yolo.utils import ops
 from ultralytics.yolo.utils.checks import check_imgsz
 from ultralytics.yolo.utils.plotting import Annotator
 tracker = None
-detected_trucks = []
 
-from .lib.config_loader import get_config
-from .lib.utils import draw_boxes, grab_truck
+try:
+    from .sort import *
+    from .lib.config_loader import get_config
+    from .lib.utils import draw_boxes
+except:
+    from sort import *
+    from lib.config_loader import get_config
+    from lib.utils import draw_boxes
+from anprmodule.predict import run
+
+detected_trucks = []
+def detect_reg_plate(img):
+    reg = run(src=img, model='best.pt')
+    print(reg)
+
+
+def enqueue_job(src):
+    thread = Thread(target=detect_reg_plate, args=(img))
+    thread.start()
+
+def grab_truck(bbox, img, detected_trucks, identities):
+    _RATIO_OF_SCREEN = 0.34
+    _SCREEN_SZ = img.shape[0] * img.shape[1]
+    for i , box in enumerate(bbox):
+        x1, y1, x2, y2 = [int(i) for i in box]
+        id = int(identities[i] if identities is not None else 0)
+        area = (x2 - x1) * (y2 - y1)
+        if area / _SCREEN_SZ > _RATIO_OF_SCREEN:
+            if id not in detected_trucks:
+                if len(detected_trucks) > 10:  # Limit the size of detected trucks to 10, to avoid overgrowth
+                    detected_trucks.pop()
+                try:
+                    truck = img[y1:y2, x1:x2]
+                    #cv2.imwrite(f'id-{id}-time-{time()}.jpg', truck)
+                    #post("", truck)
+                    detected_trucks.append(id)
+                    print(f'Truck detected with ID {id}')
+                except Exception as e:  # For some reason, bounding boxes can have negative starting points, remove these
+                    pass
 
 def init_tracker():
     global tracker
@@ -126,5 +162,5 @@ def initiate(src, model=None):
 
 
 if __name__ == "__main__":
-    src = 'https://www.youtube.com/watch?v=IGkTMeZ8_g4'
+    src = '/Users/jonas/PycharmProjects/VOLVO/volvo-yard-docker/sample_video_1.mov'
     initiate(src=src)
