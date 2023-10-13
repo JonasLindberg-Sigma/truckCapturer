@@ -19,7 +19,6 @@ def draw_boxes(img, bbox, identities=None, categories=None, names=None, offset=(
         area = (x2 - x1) * (y2 - y1)
         ratio = area / _SCREEN_SZ
         id = int(identities[i]) if identities is not None else 0
-        box_center = (int((box[0] + box[2]) / 2), (int((box[1] + box[3]) / 2)))
         label = str(id)
         (w, h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
         cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 253), 2)

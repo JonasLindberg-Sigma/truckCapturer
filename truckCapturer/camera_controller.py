@@ -1,4 +1,3 @@
-import hydra
 import torch
 from random import randint
 from threading import Thread
@@ -7,6 +6,9 @@ from ultralytics.yolo.utils import ops
 from ultralytics.yolo.utils.checks import check_imgsz
 from ultralytics.yolo.utils.plotting import Annotator
 tracker = None
+
+import omegaconf
+import cv2
 
 try:
     from .sort import *
@@ -20,12 +22,13 @@ from anprmodule.predict import run
 
 detected_trucks = []
 def detect_reg_plate(img):
-    reg = run(src=img, model='best.pt')
+    reg = run(src=img, model='/Users/jonas/PycharmProjects/VOLVO/volvo-yard-docker/best.pt')
     print(reg)
 
 
-def enqueue_job(src):
-    thread = Thread(target=detect_reg_plate, args=(img))
+def enqueue_job(img):
+    print("Starting Registration Plate detection")
+    thread = Thread(target=detect_reg_plate, args=(img,))
     thread.start()
 
 def grab_truck(bbox, img, detected_trucks, identities):
@@ -41,10 +44,10 @@ def grab_truck(bbox, img, detected_trucks, identities):
                     detected_trucks.pop()
                 try:
                     truck = img[y1:y2, x1:x2]
-                    #cv2.imwrite(f'id-{id}-time-{time()}.jpg', truck)
-                    #post("", truck)
+                    cv2.imwrite(f"/tmp/truck{id}.jpg", truck)
                     detected_trucks.append(id)
                     print(f'Truck detected with ID {id}')
+                    enqueue_job(f"/tmp/truck{id}.jpg")
                 except Exception as e:  # For some reason, bounding boxes can have negative starting points, remove these
                     pass
 
@@ -145,20 +148,19 @@ class DetectionPredictor(BasePredictor):
 
 
 def initiate(src, model=None):
-    with hydra.initialize(version_base=None, config_path=None, job_name='truckCapture'):
-        cfg = get_config()
-        def _run(src, cfg, model=None):
-            init_tracker()
-            random_color_list()
+    cfg = omegaconf.OmegaConf.load("./default.yaml")
+    def _run(src, cfg, model=None):
+        init_tracker()
+        random_color_list()
 
-            cfg.model = cfg.model or "yolov8n.pt"
-            cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
-            cfg.source = src
-            cfg.show = True
-            #cfg.device = "mps"  # Only apllicable for MacO
-            predictor = DetectionPredictor(cfg)
-            predictor()
-        _run(src, cfg)
+        cfg.model = cfg.model or "yolov8n.pt"
+        cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
+        cfg.source = src
+        cfg.show = False
+        #cfg.device = "mps"  # Only apllicable for MacO
+        predictor = DetectionPredictor(cfg)
+        predictor()
+    _run(src, cfg)
 
 
 if __name__ == "__main__":
