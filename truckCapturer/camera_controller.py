@@ -22,7 +22,7 @@ from anprmodule.predict import run
 
 detected_trucks = []
 def detect_reg_plate(img):
-    reg = run(src=img, model='/Users/jonas/PycharmProjects/VOLVO/volvo-yard-docker/best.pt')
+    reg = run(src=img, model='./best.pt')
     print(reg)
 
 
@@ -164,5 +164,5 @@ def initiate(src, model=None):
 
 
 if __name__ == "__main__":
-    src = '/Users/jonas/PycharmProjects/VOLVO/volvo-yard-docker/sample_video_1.mov'
+    src = '/Users/jonas/PycharmProjects/VOLVO/volvo-yard-docker/sample_video_2.mov'
     initiate(src=src)
