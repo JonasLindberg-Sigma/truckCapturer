@@ -83,7 +83,6 @@ class DetectionPredictor(BasePredictor):
 
     def preprocess(self, img):
         img = torch.from_numpy(img).to(self.model.device)
-        img = resize(img, [int(img.shape[1]*0.5), int(img.shape[2]*0.5)], antialias=True)
         img = img.half() if self.model.fp16 else img.float()  # uint8 to fp16/32
         img /= 255  # 0 - 255 to 0.0 - 1.0
         return img
